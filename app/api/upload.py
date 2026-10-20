@@ -1,0 +1,37 @@
+from fastapi import APIRouter, UploadFile, File, HTTPException
+import pandas as pd
+import io
+
+from app.services.profiler import profile_dataframe
+
+
+router = APIRouter()
+
+
+@router.post("/upload")
+async def upload_dataset(file: UploadFile = File(...)):
+    if not file.filename.lower().endswith(".csv"):
+        raise HTTPException(
+            status_code=400,
+            detail="For now, Datomaly only supports CSV files."
+        )
+
+    try:
+        contents = await file.read()
+
+        dataframe = pd.read_csv(
+            io.BytesIO(contents)
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Could not read CSV file: {str(e)}"
+        )
+
+    profile = profile_dataframe(dataframe)
+
+    return {
+        "filename": file.filename,
+        "profile": profile
+    }
