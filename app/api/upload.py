@@ -16,6 +16,10 @@ from app.services.recommender import (
     generate_recommendations
 )
 
+from app.services.anomaly_detector import (
+    detect_ml_anomalies
+)
+
 
 router = APIRouter()
 
@@ -55,6 +59,10 @@ async def upload_dataset(
         dataframe
     )
 
+    ml_anomalies = detect_ml_anomalies(
+        dataframe
+    )
+
     recommendations = (
         generate_recommendations(
             profile
@@ -64,5 +72,6 @@ async def upload_dataset(
     return {
         "filename": file.filename,
         "profile": profile,
+        "ml_anomalies": ml_anomalies,
         "recommendations": recommendations
     }
